@@ -4,7 +4,7 @@ import copy as cp
 class automate:
     """
     classe de manipulation des automates
-    l'alphabet est l'ensemble des caractères alphabétiques minuscules et "E" pour epsilon, 
+    l'alphabet est l'ensemble des caractères alphabétiques minuscules, "E" pour epsilon, 
     et "O" pour l'automate vide
     """
     
@@ -21,7 +21,7 @@ class automate:
         # l'expression doit contenir un et un seul caractère de l'alphabet
         if expr not in alphabet:
             raise ValueError("l'expression doit contenir un et un seul\
-                           caractère de l'alphabet " + str(self.alphabet))
+                           caractère de l'alphabet " + str(alphabet))
         # nombre d'états
         if expr == "O":
             self.n = 0
@@ -45,7 +45,7 @@ class automate:
         """affichage de l'automate par fonction print"""
         res = "Automate " + self.name + "\n"
         res += "Nombre d'états " + str(self.n) + "\n"
-        res += "Etats finals " + str(self.final) + "\n"
+        res += "Etats finaux " + str(self.final) + "\n"
         res += "Transitions:\n"
         for k,v in self.transition.items():    
             res += str(k) + ": " + str(v) + "\n"
@@ -133,15 +133,51 @@ def acces_epsilon(a):
     """ retourne la liste pour chaque état des états accessibles par epsilon transitions pour l'automate a
         res[i] est la liste des états accessible pour l'état i
     """
-    
-    # A ecrire
+    res = {i: set() for i in range(a.n)}
+
+    for state in range(a.n):
+        visited = set()
+        stack = [state]
+
+        while stack:
+            current_state = stack.pop()
+            if current_state not in visited:
+                visited.add(current_state)
+                epsilon_transitions = a.transition.get((current_state, "E"), [])
+                stack.extend(epsilon_transitions)
+
+        res[state] = list(visited)
+
+    return res
+
 
 
 def reconnait(a, mot):
-    """ Renvoie vrai si le mot mot est reconnu par l'automate a
-    """
-    
-    # a ecrire
+    """Renvoie vrai si le mot mot est reconnu par l'automate a."""
+    current_states = {0}  # Set containing the initial state
+
+    # Get epsilon closure of the initial state
+    epsilon_closure_0 = set(acces_epsilon(a)[0])
+
+    # Initialize current states with epsilon closure of the initial state
+    current_states = epsilon_closure_0
+
+    # Iterate through each character in the input word
+    for char in mot:
+        # Calculate epsilon closure for each state in the next set of states
+        next_states = set()
+        for state in current_states:
+            transitions = a.transition.get((state, char), [])
+            next_states.update(transitions)
+
+        epsilon_closures = [set(acces_epsilon(a)[state]) for state in next_states]
+
+        # Union of all epsilon closures
+        current_states = set().union(*epsilon_closures)
+
+    # Check if any of the final states are in the current set of states
+    return any(final_state in current_states for final_state in a.final)
+
 
 
 
@@ -149,26 +185,27 @@ def reconnait(a, mot):
 if __name__ == "__main__":
     # (a)
     a1 = automate("b")
-    print(a1)
+    #print(a1)
     # (b)
     a2 = automate("a")
-    print(a2)
+    #print(a2)
     # (ab)
     a3 = concatenation(a1, a2)
-    print(a3)
+    #print(a3)
     # (a+b)
     a4 = union(a1, a2)
-    print(a4)
+    #print(a4)
     # a*
     a5 = etoile(a2)
-    print(a5)
+    #print(a5)
     # a** (pour tester epsilon-transitions accessibilité avec circuit)
     a6 = etoile(a5)
-    print(a6)
-    print(acces_epsilon(a6))
+    #print(a6)
+    #print(acces_epsilon(a6))
     # tests de reconnaissance 
     print(reconnait(a5, "aaa"))
     print(reconnait(a5, "aab"))
     print(reconnait(a6, "aaa"))
     print(reconnait(a6, "aab"))
-   
+
+
