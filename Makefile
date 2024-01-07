@@ -17,7 +17,7 @@ run: main.py
 	python3 main.py
 
 main.py: regexp test.1
-	./regexp < test.1
+	./regexp < test.1 > main.py
 
 # Commenter deux des trois lignes en fonction de l'ordi
 # La deuxième et la troisième est normalement pour les MAC
@@ -26,10 +26,10 @@ main.py: regexp test.1
 regexp: regexp.yy.c regexp.tab.c
 #	gcc -o $@ $^ -ly -ll
 #	gcc -o $@ $^ ${LDFLAGS} -ly -lfl
-	gcc -mmacosx-version-min=13.1 -o $@ $^ ${LDFLAGS} -ly -lfl
+	gcc -mmacosx-version-min=14.0 -o $@ $^ ${LDFLAGS} -ly -ll
 
 regexp.tab.c: regexp.y
-	bison -d --report=all $^
+	bison -d --debug --report=all $^
 #	bison -d -v -g $^
 # -d pour générer le fichier exo01.tab.h
 # -v pour générer le fichier exo01.output
